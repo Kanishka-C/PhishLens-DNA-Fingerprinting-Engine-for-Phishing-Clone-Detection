@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishLens DNA Fingerprinting Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="blob-wrapper">
+        <div class="blob blob1"></div>
+        <div class="blob blob2"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="logo-box">
+                <img src="resources/logo.png" alt="DNA Fingerprinting Logo"
+                    style="width: 40px; height: 40px; object-fit: contain;">
+            </div>
+            <h1>PhishLens</h1>
+            <p>DNA Fingerprinting Engine for Phishing Clone Detection</p>
+        </header>
+
+        <main>
+            <div class="glass-card input-section">
+                <h2>Analyze URL</h2>
+                <div class="input-group">
+                    <input type="url" id="urlInput" placeholder="https://example.com" required>
+                    <button id="analyzeBtn" class="btn primary-btn">
+                        <span class="btn-text">Analyze</span>
+                        <div class="loader hidden"></div>
+                    </button>
+                </div>
+                <div id="statusMessage" class="status-message"></div>
+            </div>
+
+            <div id="resultSection" class="glass-card result-section hidden">
+                <div class="result-header">
+                    <h2>Analysis Results</h2>
+                    <div id="classificationBadge" class="badge">Validating...</div>
+                </div>
+
+                <div class="result-grid">
+                    <div class="score-card">
+                        <h3>Similarity Score</h3>
+                        <div class="circular-progress">
+                            <svg viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" class="bg"></circle>
+                                <circle cx="50" cy="50" r="45" class="progress" id="scoreCircle"></circle>
+                            </svg>
+                            <div class="score-value" id="scoreTarget">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="details-card">
+                        <h3>Fingerprint Details</h3>
+                        <div class="detail-row">
+                            <span class="label">Matched Domain:</span>
+                            <span class="value" id="matchedDomainVal">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">URL Scheme:</span>
+                            <span class="value" id="urlVal">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">DOM Max Depth:</span>
+                            <span class="value" id="depthVal">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Script Tags:</span>
+                            <span class="value" id="scriptsVal">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Hyperlinks:</span>
+                            <span class="value" id="linksVal">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="security-grid">
+                    <div class="ssl-card">
+                        <h3>SSL Certificate Validation</h3>
+                        <div class="detail-row">
+                            <span class="label">Status:</span>
+                            <span class="value" id="sslStatusVal">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Issuer:</span>
+                            <span class="value" id="sslIssuerVal">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Expiry Days:</span>
+                            <span class="value" id="sslExpiryVal">-</span>
+                        </div>
+                    </div>
+
+                    <div class="endpoints-card">
+                        <h3>Attack Surface / Endpoints</h3>
+                        <div class="endpoint-stats">
+                            <span class="pill" id="apiPill">0 APIs</span>
+                            <span class="pill" id="scriptPill">0 Ext. Scripts</span>
+                            <span class="pill" id="linkPill">0 Ext. Links</span>
+                        </div>
+                        <div class="endpoint-list" id="endpointList">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-footer">
+                    <button id="resetBtn" class="btn text-btn">New Analysis</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

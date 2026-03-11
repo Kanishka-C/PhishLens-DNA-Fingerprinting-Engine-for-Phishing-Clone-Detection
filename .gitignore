@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.env
+
+# Database
+*.db
+*.sqlite3
+dna_repository.db
+
+# Cloned/Test files
+clones/
+urls_to_seed.txt
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+.project
+.pydevproject
+
+# OS generated files
+.DS_Store
+Thumbs.db
