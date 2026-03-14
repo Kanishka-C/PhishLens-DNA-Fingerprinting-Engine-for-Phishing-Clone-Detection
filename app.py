@@ -4,6 +4,16 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import os
 import uvicorn
+import logging
+import time
+
+# ── Logger Setup ──────────────────────────────────────────────────────────────
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s  %(levelname)-8s  %(message)s',
+    datefmt='%H:%M:%S'
+)
+log = logging.getLogger('PhishLens')
 
 # Import modules
 from modules.url_input import validate_and_prepare_url
@@ -33,30 +43,49 @@ class AnalyzeRequest(BaseModel):
 
 @app.post("/api/analyze")
 async def analyze_url(request: AnalyzeRequest):
+    t_start = time.time()
     try:
+        log.info("="*60)
+        log.info(f"[1/9] REQUEST  → '{request.url}'")
+
         # 2. URL Input Module
         valid_url = validate_and_prepare_url(request.url)
-        
-        # 3. Webpage Retrieval Unit
+        log.info(f"[2/9] URL OK   → {valid_url}")
+
+        # 3. Webpage Retrieval
+        log.info(f"[3/9] FETCH    → Downloading HTML from {valid_url} ...")
         html_content = await fetch_webpage(valid_url)
-        
-        # 4. DOM Parsing Module
+        log.info(f"[3/9] FETCH OK → {len(html_content):,} bytes received")
+
+        # 4. DOM Parsing
+        log.info("[4/9] DOM      → Parsing HTML into DOM tree ...")
         dom_tree = parse_html_to_dom(html_content)
-        
-        # 5. Structural Feature Extraction Module
+        log.info("[4/9] DOM OK   → DOM tree built")
+
+        # 5. Feature Extraction
+        log.info("[5/9] FEATURES → Extracting structural features ...")
         features = extract_features(dom_tree)
-        
-        # 6. Webpage DNA Generator
+        log.info(f"[5/9] FEATURES → Tags: {len(features.get('tag_order', []))}  |  Depth: {features.get('max_dom_depth')}  |  Scripts: {features.get('script_count')}  |  Links: {features.get('link_count')}")
+
+        # 6. DNA Generation
+        log.info("[6/9] DNA      → Generating structural DNA fingerprint ...")
         dna = generate_dna(features)
-        
-        # 7. Cybersecurity Features: SSL & Endpoints
-        ssl_info = analyze_ssl_certificate(valid_url)
+        log.info(f"[6/9] DNA OK   → Hash: {dna['structure_hash'][:20]}...")
+
+        # 7. Cybersecurity extras
+        log.info("[7/9] SECURITY → Running SSL & Endpoint analysis ...")
+        ssl_info  = analyze_ssl_certificate(valid_url)
         endpoints = extract_endpoints(dom_tree, valid_url)
-        
-        # 8. DNA Repository lookup & 9. Similarity Analysis
+        ssl_status = 'Valid ✓' if ssl_info.get('valid_cert') else ('No SSL' if not ssl_info.get('has_ssl') else 'Invalid ✗')
+        log.info(f"[7/9] SECURITY → SSL: {ssl_status}  |  APIs found: {len(endpoints.get('api_endpoints', []))}  |  Ext scripts: {len(endpoints.get('external_scripts', []))}")
+
+        # 8. Repository lookup
+        log.info("[8/9] REPO     → Loading trusted DNA repository ...")
         trusted_sites = get_all_trusted_sites()
-        
+        log.info(f"[8/9] REPO OK  → {len(trusted_sites)} trusted site(s) loaded")
+
         if not trusted_sites:
+             log.warning("[8/9] REPO     → WARNING: Repository is empty! Run seed_db.py first.")
              return {
                  "status": "warning",
                  "message": "No trusted sites in repository. Please run seed_db.py first.",
@@ -65,12 +94,17 @@ async def analyze_url(request: AnalyzeRequest):
                  "ssl_info": ssl_info,
                  "endpoints": endpoints
              }
-             
+
+        # 9. Similarity Analysis
+        log.info("[9/9] SIMILARITY → Computing TF-IDF Cosine Similarity against all trusted sites ...")
         best_match_info = find_best_match(dna, trusted_sites)
-        
-        # 10. Decision & Classification Module
+
+        # 10. Decision
         classification, matched_domain, score = classify_webpage(valid_url, best_match_info)
-        
+        elapsed = time.time() - t_start
+        log.info(f"[RESULT] → Score: {score*100:.2f}%  |  Matched: {matched_domain}  |  Verdict: {classification.upper()}  |  ({elapsed:.2f}s)")
+        log.info("="*60)
+
         return {
             "status": "success",
             "url": valid_url,
@@ -81,8 +115,10 @@ async def analyze_url(request: AnalyzeRequest):
             "ssl_info": ssl_info,
             "endpoints": endpoints
         }
-        
+
     except Exception as e:
+        log.error(f"[ERROR] Pipeline failed for '{request.url}': {e}")
+        log.info("="*60)
         raise HTTPException(status_code=400, detail=str(e))
 
 # Mount frontend static files if the directory exists
